@@ -1,0 +1,2 @@
+Gamr will use is the API from IGDB.com to get an updated list of all video games.
+Users will be able to search through the list of videogames in the database and select their top 3 video games to add to their profiles.
