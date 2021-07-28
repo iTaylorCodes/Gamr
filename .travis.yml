@@ -3,5 +3,10 @@ python:
   - "3.8"
 install:
   - pip install -r requirements.txt
-script: 
-  - python3 -m unittest
+services:
+  - postgresql
+before_script:
+  - psql -c 'create database gamr_test;' -U postgres
+script:
+  - export FLASK_ENV=testing
+  - python3 -m unittest discover tests
