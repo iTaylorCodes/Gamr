@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/iTaylorCodes/Capstone-1.svg?branch=main)](https://travis-ci.com/iTaylorCodes/Capstone-1)
+[![Coverage Status](https://coveralls.io/repos/github/iTaylorCodes/Capstone-1/badge.svg?branch=main)](https://coveralls.io/github/iTaylorCodes/Capstone-1?branch=main)
 
 # Capstone-1: Gamr
 
