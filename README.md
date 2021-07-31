@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.com/iTaylorCodes/Capstone-1.svg?branch=main)](https://travis-ci.com/iTaylorCodes/Capstone-1)
 [![Coverage Status](https://coveralls.io/repos/github/iTaylorCodes/Capstone-1/badge.svg?branch=main)](https://coveralls.io/github/iTaylorCodes/Capstone-1?branch=main)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/be59e436ae6b4e4cbdfa9d07ca8f617c)](https://www.codacy.com/gh/iTaylorCodes/Capstone-1/dashboard?utm_source=github.com&utm_medium=referral&utm_content=iTaylorCodes/Capstone-1&utm_campaign=Badge_Grade)
 
 # Capstone-1: Gamr
 
