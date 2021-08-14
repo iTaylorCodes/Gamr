@@ -6,6 +6,7 @@ from run import app
 
 
 class MatchModelTestCase(TestCase):
+
     """Test Match class."""
 
     def setUp(self):

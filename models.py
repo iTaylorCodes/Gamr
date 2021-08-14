@@ -6,6 +6,7 @@ bcrypt = Bcrypt()
 db = SQLAlchemy()
 
 class Match(db.Model):
+
     """Users who have been matched.
     Boolean if they accepted eachother."""
 
@@ -29,6 +30,7 @@ class Match(db.Model):
 
 
 class Favorites(db.Model):
+
     """User favorites"""
 
     __tablename__ = 'favorites'
@@ -52,6 +54,7 @@ class Favorites(db.Model):
 
 
 class User(db.Model):
+
     """User in the db"""
 
     __tablename__ = 'users'
@@ -87,6 +90,8 @@ class User(db.Model):
     )
 
     def __repr__(self):
+        """Representation of the User class."""
+
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
     def is_matched_with(self, other_user):

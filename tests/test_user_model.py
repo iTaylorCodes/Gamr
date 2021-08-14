@@ -6,11 +6,12 @@ from run import app
 
 
 class UserModelTestCase(TestCase):
+
     """Test User class."""
 
     def setUp(self):
         """Create test client and add sample data."""
-
+        
         self.client = app.test_client()
 
         db.create_all()
