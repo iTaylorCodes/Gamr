@@ -6,6 +6,7 @@ from run import app
 
 
 class FavoritesModelTestCase(TestCase):
+
     """Test Favorites class."""
 
     def setUp(self):
@@ -36,7 +37,7 @@ class FavoritesModelTestCase(TestCase):
 
     def test_favorites_model(self):
         """Does the basic model work?"""
-
+        
         f = Favorites(
             role='test_role',
             system='test_system',
