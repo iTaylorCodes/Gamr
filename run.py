@@ -1,9 +1,11 @@
-from flask import Flask, redirect, render_template, flash
+from flask import Flask, redirect, render_template, flash, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy import exc
-from forms import UserAddForm
+from forms import UserAddForm, UserLoginForm
 from handlers import handle_signup_errors
 from models import connect_db, db, User
+
+CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
 
@@ -20,6 +22,29 @@ connect_db(app)
 
 ########################################################
 # User Signup/Login/Logout Routes:
+
+@app.before_request
+def add_user_to_g():
+    """If logged in, add current user to Flask global."""
+
+    if CURR_USER_KEY in session:
+        g.user = User.query.get(session[CURR_USER_KEY])
+
+    else:
+        g.user = None
+
+
+def do_login(user):
+    """Log in user."""
+
+    session[CURR_USER_KEY] = user.id
+
+
+def do_logout():
+    """Logout user."""
+
+    if CURR_USER_KEY in session:
+        del session[CURR_USER_KEY]
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -45,7 +70,7 @@ def signup():
             )
             db.session.commit()
 
-            return redirect('/signup/favorites')
+            return redirect('/login')
         # If db errors, redirect back to try again
         except exc.SQLAlchemyError as e:
             print(f'ERROR TYPE: {type(e)}')
@@ -53,3 +78,29 @@ def signup():
             return redirect('/signup')
     else:
         return render_template('users/signup.html', form=form)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Handle user login"""
+
+    form = UserLoginForm()
+
+    if form.validate_on_submit():
+        user = User.authenticate(form.username.data, form.password.data)
+
+        if user:
+            do_login(user)
+            flash(f"Hello, {user.first_name}!", "success")
+            return redirect('/')
+        
+        flash("Invalid credentials.", "danger")
+
+    return render_template('users/login.html', form=form)
+
+@app.route('/logout')
+def logout():
+    """Handle logout of user"""
+
+    do_logout()
+    flash("You have been logged out", "success")
+    return redirect('/login')
