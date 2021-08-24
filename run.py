@@ -45,7 +45,7 @@ def signup():
             )
             db.session.commit()
 
-            return redirect('/signup/favorites')
+            return redirect('/login')
         # If db errors, redirect back to try again
         except exc.SQLAlchemyError as e:
             print(f'ERROR TYPE: {type(e)}')
