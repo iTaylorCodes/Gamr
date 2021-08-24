@@ -12,6 +12,12 @@ class UserAddForm(FlaskForm):
     last_name = StringField('Last Name', validators=[DataRequired()])
     image_url = StringField('(Optional) Image URL')
 
+class UserLoginForm(FlaskForm):
+    """Form for logging in a user."""
+
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[Length(min=6)])
+
 class UserFavoritesForm(FlaskForm):
     """Form for adding users favorites."""
 

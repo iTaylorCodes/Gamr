@@ -1,7 +1,8 @@
 from unittest import TestCase
 from flask.helpers import get_flashed_messages
+from flask import session
 from models import db, User, Favorites, Match
-from run import app
+from run import app, CURR_USER_KEY
 
 class UserViewsTestCase(TestCase):
     
@@ -64,3 +65,38 @@ class UserViewsTestCase(TestCase):
             self.assertEqual(new_user_test.username, 'testuser3')
             self.assertEqual(new_user_test.email, 'test3@test.com')
             self.assertEqual(resp.status_code, 302)
+
+    def test_user_login(self):
+        """Does the login page display correctly? Does the view properly log in a user with the correct credentials?"""
+
+        with self.client as c:
+            # Check that the view is displaying proper HTML
+            resp = c.get('/login')
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('<h2>Welcome back.</h2>', str(resp.data))
+
+            # Check that the view rejects the wrong credentials
+            resp = c.post('/login', data={"username": "wrong_username", "password": 'HASHED_PASSWORD1'})
+            self.assertEqual(get_flashed_messages()[0], "Invalid credentials.")
+            
+            resp = c.post('/login', data={"username": "testuser1", "password": 'wrong_password'})
+            self.assertEqual(get_flashed_messages()[0], "Invalid credentials.")
+
+            # Check that the view can log in a user
+            resp = c.post('/login', data={"username": "testuser1", "password": 'HASHED_PASSWORD1'})
+
+            self.assertEqual(get_flashed_messages()[0], "Hello, Test1firstname!")
+            self.assertEqual(resp.status_code, 302)
+            self.assertIn(CURR_USER_KEY, session)
+
+    def test_user_logout(self):
+        """Does the logout view properly log out current user and redirect?"""
+
+        with self.client as c:
+            # Check that logout view logs out current user
+            resp = c.get('/logout')
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertNotIn(CURR_USER_KEY, session)
+            self.assertEqual(get_flashed_messages()[0], "You have been logged out")
