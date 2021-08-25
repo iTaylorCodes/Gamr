@@ -100,3 +100,26 @@ class UserViewsTestCase(TestCase):
             self.assertEqual(resp.status_code, 302)
             self.assertNotIn(CURR_USER_KEY, session)
             self.assertEqual(get_flashed_messages()[0], "You have been logged out")
+
+    def test_user_profile(self):
+        """Does the show_user_profile view display the user's profile?"""
+
+        with self.client as c:
+            # Check that view displays proper HTML depending on the user
+            resp = c.get(f'/users/{self.uid1}')
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('<h2 class="card-title">testuser1</h2>', str(resp.data))
+
+            resp = c.get(f'/users/{self.uid2}')
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('<h2 class="card-title">testuser2</h2>', str(resp.data))
+
+    def test_homepage(self):
+        """Does the homepage display?"""
+
+        with self.client as c:
+            # Check that the view displays proper HTML
+            resp = c.get('/')
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('<h1>Homepage. Not yet Implemented.</h1>', str(resp.data))

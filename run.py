@@ -3,7 +3,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy import exc
 from forms import UserAddForm, UserLoginForm
 from handlers import handle_signup_errors
-from models import connect_db, db, User
+from models import connect_db, db, User, Favorites
 
 CURR_USER_KEY = "curr_user"
 
@@ -104,3 +104,24 @@ def logout():
     do_logout()
     flash("You have been logged out", "success")
     return redirect('/login')
+
+########################################################
+# General User Routes:
+
+@app.route('/users/<int:user_id>')
+def show_user_profile(user_id):
+    """Show user's profile"""
+
+    user = User.query.get_or_404(user_id)
+    favorites = Favorites.query.filter_by(user_id=user.id).one_or_none()
+
+    return render_template('users/detail.html', user=user, favorites=favorites)
+
+########################################################
+# Homepage:
+
+@app.route('/')
+def show_homepage():
+    """Show homepage"""
+
+    return render_template('home.html')
