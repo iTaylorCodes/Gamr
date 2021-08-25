@@ -17,7 +17,7 @@ class ProductionConfig(Config):
 class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_ECHO = True
-    DEBUG_TB_INTERCEPT_REDIRECTS = True
+    DEBUG_TB_INTERCEPT_REDIRECTS = False
 
 class TestingConfig(Config):
     TESTING = True
