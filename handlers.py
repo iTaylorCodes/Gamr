@@ -1,4 +1,6 @@
 from flask import flash
+import os
+import requests
 from models import User
 
 def handle_signup_errors(username, email, user_id):
@@ -16,3 +18,29 @@ def handle_signup_errors(username, email, user_id):
 
     else:
         return False
+    
+def handle_game_choices():
+    """Use the IGDB API to give the user choices for their favorite video games"""
+
+    client_id = os.environ.get("IGDB_CLIENT_ID")
+    client_secret = os.environ.get("IGDB_CLIENT_SECRET")
+    auth_resp = requests.post(f'https://id.twitch.tv/oauth2/token?client_id={client_id}&client_secret={client_secret}&grant_type=client_credentials')
+    
+    auth_resp_dict = auth_resp.json()
+    auth_token = auth_resp_dict['access_token']
+
+    headers = {
+        'Accept': 'application/json',
+        'Client-ID': f'{client_id}',
+        'Authorization': f'Bearer {auth_token}'
+        }
+    resp = requests.post('https://api.igdb.com/v4/games', headers=headers, data='fields name; where release_dates.platform = (130,48,49,6) & themes != (42); limit 500;')
+
+    resp_dict = resp.json()
+
+    games = []
+
+    for key in resp_dict:
+        games.append(key['name'])
+    
+    return games
