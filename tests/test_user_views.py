@@ -95,10 +95,17 @@ class UserViewsTestCase(TestCase):
             resp = c.post('/login', data={"username": "testuser1", "password": 'wrong_password'})
             self.assertEqual(get_flashed_messages()[0], "Invalid credentials.")
 
-            # Check that the view can log in a user
+            # Check that the view redirects to set up user favorites upon first log in
             resp = c.post('/login', data={"username": "testuser1", "password": 'HASHED_PASSWORD1'})
 
-            self.assertEqual(get_flashed_messages()[0], "Hello, Test1firstname!")
+            self.assertEqual(get_flashed_messages()[0], "Welcome, Test1firstname! Please enter some of your gaming preferences so others can match with you better. 😊")
+            self.assertEqual(resp.status_code, 302)
+            self.assertIn(CURR_USER_KEY, session)
+
+            # Check that the view can log in a user who already set their favorites
+            resp = c.post('/login', data={"username": "testuser2", "password": 'HASHED_PASSWORD2'})
+
+            self.assertEqual(get_flashed_messages()[1], "Welcome Back, Test2firstname!")
             self.assertEqual(resp.status_code, 302)
             self.assertIn(CURR_USER_KEY, session)
 
@@ -137,7 +144,7 @@ class UserViewsTestCase(TestCase):
             self.assertIn('<h1>Homepage. Not yet Implemented.</h1>', str(resp.data))
 
     def test_show_edit_form(self):
-        """Can a non logged in user see the page? Does the view properply display the EditUserForm when user is logged in?"""
+        """Can a non logged in user see the page? Does the view properly display the EditUserForm when user is logged in?"""
         
         with self.client as c:
             resp = c.get(f"/users/{self.uid1}/edit", follow_redirects=True)
@@ -224,3 +231,38 @@ class UserViewsTestCase(TestCase):
         user_test = User.query.filter_by(id=10).one_or_none()
         self.assertEqual(resp.status_code, 302)
         self.assertFalse(user_test)
+    
+    def test_show_favorites_form(self):
+        """Can user see the page if they don't have favorites yet?"""
+        
+        with self.client as c:
+            # Check that a user who already has favorites is redirected
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid2
+
+            resp = c.get("/favorites", follow_redirects=True)
+            self.assertEqual(resp.status_code, 200)
+
+            # Check that a first time user can see the form
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid1
+                
+            resp = c.get('/favorites')
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('<h2>Choose Your Favorites</h2>', html)
+
+    def test_set_user_favorites(self):
+        """Can a first time user add their favorites?"""
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid1
+
+            resp = c.post('/favorites', data={"role": "Healer", "system": "PC", "game1": "Diablo"})
+
+            user_favorites = Favorites.query.filter_by(user_id=self.uid1).one_or_none()
+            self.assertEqual(user_favorites.role, "Healer")
+            self.assertEqual(get_flashed_messages()[0], "Your favorites have been saved! Edit them at anytime from your profile.")
+            self.assertEqual(resp.status_code, 302)
