@@ -1,8 +1,8 @@
 from flask import Flask, redirect, render_template, flash, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy import exc
-from forms import UserAddForm, UserLoginForm
-from handlers import handle_signup_errors
+from forms import UserAddForm, UserLoginForm, EditUserForm
+from handlers import handle_game_choices, handle_signup_errors
 from models import connect_db, db, User, Favorites
 
 CURR_USER_KEY = "curr_user"
@@ -116,6 +116,96 @@ def show_user_profile(user_id):
     favorites = Favorites.query.filter_by(user_id=user.id).one_or_none()
 
     return render_template('users/detail.html', user=user, favorites=favorites)
+
+@app.route('/users/<int:user_id>/edit')
+def show_edit_profile_form(user_id):
+    """Show form to edit user's profile."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+    favorites = Favorites.query.filter_by(user_id=user.id).one_or_none()
+
+    form = EditUserForm()
+
+    # Set user data into form for editing
+    form.username.data = user.username
+    form.email.data = user.email
+    form.first_name.data = user.first_name
+    form.last_name.data = user.last_name
+    form.bio.data = user.bio
+    form.discord_username.data = user.discord_username
+    form.image_url.data = user.image_url
+    if favorites:
+        form.role.data = favorites.role
+        form.system.data = favorites.system
+        form.game1.data = favorites.game1
+        form.game2.data = favorites.game2
+        form.game3.data = favorites.game3
+
+    # Handle Favorite Game Choices
+    form.game1.choices = handle_game_choices()
+    form.game2.choices = handle_game_choices()
+    form.game3.choices = handle_game_choices()
+
+    return render_template('users/edit.html', form=form, user=user)
+
+@app.route('/users/<int:user_id>/edit', methods=["POST"])
+def edit_user_profile(user_id):
+    """Edit user's profile"""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+    favorites = Favorites.query.filter_by(user_id=user.id).one_or_none()
+
+    form = EditUserForm()
+
+    errors = handle_signup_errors(form.username.data, form.email.data, user.id)
+    if errors:
+        return redirect(f'/users/{user.id}/edit')
+
+    if User.authenticate(user.username,form.password.data):
+        # Update user account information
+        user.username = form.username.data,
+        user.email = form.email.data,
+        user.first_name = form.first_name.data,
+        user.last_name = form.last_name.data,
+        user.bio = form.bio.data,
+        user.discord_username = form.discord_username.data,
+        user.image_url = form.image_url.data or User.image_url.default.arg,
+                
+        # If user hasn't set up their favorites yet, create a new Favorites Instance for the user
+        if not favorites:
+            new_favorites = Favorites(
+                role=form.role.data,
+                system=form.system.data,
+                game1=form.game1.data,
+                game2=form.game2.data,
+                game3=form.game3.data,
+                user_id=user.id
+            )
+            db.session.add(new_favorites)
+            db.session.commit()
+            user.favorites_id = new_favorites.id
+
+        else:
+            # Update user favorites
+            favorites.role = form.role.data,
+            favorites.system = form.system.data,
+            favorites.game1 = form.game1.data,
+            favorites.game2 = form.game2.data,
+            favorites.game3 = form.game3.data,
+
+        db.session.commit()
+        return redirect(f"/users/{user.id}")
+    else:        
+        flash('Wrong password!', 'danger')
+        return redirect(f'/users/{user.id}/edit')
 
 ########################################################
 # Homepage:
