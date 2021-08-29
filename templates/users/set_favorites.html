@@ -1,0 +1,19 @@
+{% extends 'base.html' %} {% block content %}
+
+<form method="POST" id="favorites_form">
+  <div class="row">
+    <div class="col-12">
+      <div class="card" style="margin-bottom: 20px">
+        <div class="card-body">
+          <div class="card-title"><h2>Choose Your Favorites</h2></div>
+          {% for field in form if field.widget.input_type != 'hidden' %} {% for error in field.errors %}
+          <span class="text-danger">{{ error }}</span>
+          {% endfor %} {{ field.label(field.label.text) }}{{ field(placeholder=field.label.text, class="form-control") }} {% endfor %}
+          <button class="btn btn-success">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+{% endblock %}

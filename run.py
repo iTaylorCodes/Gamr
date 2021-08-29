@@ -1,7 +1,7 @@
 from flask import Flask, redirect, render_template, flash, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy import exc
-from forms import UserAddForm, UserLoginForm, EditUserForm
+from forms import UserAddForm, UserLoginForm, EditUserForm, UserFavoritesForm
 from handlers import handle_game_choices, handle_signup_errors
 from models import connect_db, db, User, Favorites
 
@@ -90,7 +90,13 @@ def login():
 
         if user:
             do_login(user)
-            flash(f"Hello, {user.first_name}!", "success")
+            add_user_to_g()
+            # If user hasn't setup their favorites then redirect to /favorites
+            if not g.user.favorites_id:
+                flash(f"Welcome, {user.first_name}! Please enter some of your gaming preferences so others can match with you better. 😊", "success")
+                return redirect('/favorites')
+
+            flash(f"Welcome Back, {user.first_name}!", "success")
             return redirect('/')
         
         flash("Invalid credentials.", "danger")
@@ -104,6 +110,54 @@ def logout():
     do_logout()
     flash("You have been logged out", "success")
     return redirect('/login')
+
+########################################################
+# Set Favorites Route:
+
+@app.route('/favorites')
+def show_favorites_form():
+    """Show form for user to add their favorites"""
+
+    if g.user.favorites_id:
+        return redirect('/')
+
+    form = UserFavoritesForm()
+
+    # Handle Favorite Game Choices
+    form.game1.choices = handle_game_choices()
+    form.game2.choices = handle_game_choices()
+    form.game3.choices = handle_game_choices()
+
+    return render_template('users/set_favorites.html', form=form)
+
+@app.route('/favorites', methods=["POST"])
+def set_user_favorites():
+    """Handle initial setup of user favorites."""
+
+    form = UserFavoritesForm()
+
+    # Add user favorites to db
+    try:
+        favorites = Favorites(
+            role=form.role.data,
+            system=form.system.data,
+            game1=form.game1.data,
+            game2=form.game2.data,
+            game3=form.game3.data,
+            user_id=g.user.id
+        )
+        db.session.add(favorites)
+        db.session.commit()
+
+        g.user.favorites_id = favorites.id
+        db.session.commit()
+
+        flash("Your favorites have been saved! Edit them at anytime from your profile.", "success")
+        return redirect('/')
+    except exc.SQLAlchemyError as e:
+        print(f'ERROR TYPE: {type(e)}')
+        flash('Something went wrong. Please try again.', 'danger')
+        return redirect('/favorites')
 
 ########################################################
 # General User Routes:
