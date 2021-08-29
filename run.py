@@ -207,6 +207,21 @@ def edit_user_profile(user_id):
         flash('Wrong password!', 'danger')
         return redirect(f'/users/{user.id}/edit')
 
+@app.route('/users/delete', methods=["POST"])
+def delete_user():
+    """Delete user."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    do_logout()
+
+    db.session.delete(g.user)
+    db.session.commit()
+
+    return redirect("/signup")
+
 ########################################################
 # Homepage:
 
