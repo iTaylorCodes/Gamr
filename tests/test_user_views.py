@@ -205,3 +205,22 @@ class UserViewsTestCase(TestCase):
             self.assertEqual(updated_user.first_name, "NEW_FIRST_NAME")
             self.assertEqual(updated_favorites.game1, "Halo")
             self.assertEqual(resp.status_code, 302)
+
+    def test_delete_user(self):
+        """Can a user delete their account?"""
+
+        with self.client as c:
+            resp = c.post("/users/delete", follow_redirects=True)
+            html = resp.get_data(as_text=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized.", html)
+        
+        with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid1
+
+        # Check that the user is deleted from db
+        resp = c.post("/users/delete")
+
+        user_test = User.query.filter_by(id=10).one_or_none()
+        self.assertEqual(resp.status_code, 302)
+        self.assertFalse(user_test)
