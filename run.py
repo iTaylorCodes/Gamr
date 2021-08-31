@@ -2,8 +2,8 @@ from flask import Flask, redirect, render_template, flash, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy import exc
 from forms import UserAddForm, UserLoginForm, EditUserForm, UserFavoritesForm
-from handlers import handle_game_choices, handle_signup_errors
-from models import connect_db, db, User, Favorites
+from handlers import handle_game_choices, handle_signup_errors, random_user
+from models import connect_db, db, User, Favorites, AcceptedMatches
 
 CURR_USER_KEY = "curr_user"
 
@@ -283,4 +283,39 @@ def delete_user():
 def show_homepage():
     """Show homepage"""
 
-    return render_template('home.html')
+    # If not logged in, display homepage that links to signup
+    if not g.user:
+        return render_template('home-anon.html')
+
+    # Pick a random, not matched, user to offer as a match
+    other_user = random_user()[0]
+
+    # Check if the random user is already matched with logged in user
+    already_matched = AcceptedMatches.query.filter(g.user.id == AcceptedMatches.user1_id, other_user.id == AcceptedMatches.user2_id).one_or_none()
+
+    # Make sure random user is... not the logged in user, has favorites already set, and not a previous match
+    if other_user == g.user or other_user.favorites_id == None or other_user in g.user.matches or already_matched != None:
+        return redirect('/')
+
+    # Queries Favorites to display the random user's profile
+    other_user_favorites = Favorites.query.filter_by(user_id=other_user.id).one_or_none()
+
+    return render_template('home.html', other_user=other_user, other_user_favorites=other_user_favorites)
+
+@app.route('/<int:other_user_id>', methods=["POST"])
+def match_users(other_user_id):
+    """Accept a match between 2 users"""
+
+    user = g.user
+    user2 = User.query.get_or_404(other_user_id)
+
+    match = user.accepts_match(other_user_id)
+
+    # If the second user accepts the match, then captures the accepted match in the AcceptedMatches table and notifies the user
+    if match.user1_accepted == True and match.user2_accepted == True:
+        flash("You are a match! Visit your matches page to view your new match! 😄", "success")
+        accepted_match = AcceptedMatches(user1_id=user.id, user2_id=user2.id)
+        db.session.add(accepted_match)
+        db.session.commit()
+    
+    return redirect('/')

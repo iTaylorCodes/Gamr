@@ -1,7 +1,9 @@
 from flask import flash
+from sqlalchemy.sql import func
+from sqlalchemy.orm import load_only
 import os
 import requests
-from models import User
+from models import User, db
 
 def handle_signup_errors(username, email, user_id):
     """Handles errors for signup or updating profile"""
@@ -44,3 +46,11 @@ def handle_game_choices():
         games.append(key['name'])
     
     return games
+
+def random_user():
+    return User.query.options(load_only('id')).offset(
+            func.floor(
+                func.random() *
+                db.session.query(func.count(User.id))
+            )
+        ).limit(1).all()
