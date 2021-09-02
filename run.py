@@ -166,10 +166,18 @@ def set_user_favorites():
 def show_user_profile(user_id):
     """Show user's profile"""
 
+    if not g.user:
+        return redirect("/")
+
     user = User.query.get_or_404(user_id)
     favorites = Favorites.query.filter_by(user_id=user.id).one_or_none()
+    matches = user.all_matches()
+    match_ids = []
 
-    return render_template('users/detail.html', user=user, favorites=favorites)
+    for u in matches:
+        match_ids.append(u.id)
+
+    return render_template('users/detail.html', user=user, favorites=favorites, matches=matches, match_ids=match_ids)
 
 @app.route('/users/<int:user_id>/edit')
 def show_edit_profile_form(user_id):
@@ -319,3 +327,22 @@ def match_users(other_user_id):
         db.session.commit()
     
     return redirect('/')
+
+########################################################
+# General Match Routes:
+
+@app.route('/matches')
+def show_matches():
+    """Show user matches"""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    all_matches = g.user.all_matches()
+
+    if len(all_matches) == 0:
+        flash("You don't have any matches yet, let's make some matches!", "success")
+        return redirect('/')
+
+    return render_template('users/matches.html', matches=all_matches)
