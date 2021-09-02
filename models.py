@@ -28,6 +28,24 @@ class Match(db.Model):
 
     user2_accepted = db.Column(db.Boolean)
 
+class AcceptedMatches(db.Model):
+
+    """All matches that have been accepted between users."""
+
+    __tablename__ = 'accepted_matches'
+
+    user1_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        primary_key=True
+    )
+
+    user2_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        primary_key=True
+    )
+
 
 class Favorites(db.Model):
 
@@ -104,23 +122,25 @@ class User(db.Model):
     def accepts_match(self, other_user_id):
         """Accepts a match between 2 users and adds it to matches table."""
 
-        user2 = User.query.get_or_404(other_user_id)
-
-        self.matches.append(user2)
-
-        match = Match.query.filter(self.id == Match.user1_id and other_user_id == Match.user2_id or self.id == Match.user2_id and other_user_id == Match.user1_id).first()
+        match = Match.query.filter(self.id == Match.user1_id, other_user_id == Match.user2_id).one_or_none()
+        
         if match == None:
+            match = Match.query.filter(self.id == Match.user2_id, other_user_id == Match.user1_id).one_or_none()
+        
+        if not match:
             match = Match(
                 user1_id=self.id,
-                user2_id=other_user_id,
-                user1_accepted = None,
-                user2_accepted = None
+                user2_id=other_user_id
             )
+            db.session.add(match)
+            db.session.commit()
 
         if match.user1_id == self.id:
             match.user1_accepted = True
+            db.session.commit()
         else:
             match.user2_accepted = True
+            db.session.commit()
 
         return match
 

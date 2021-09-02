@@ -86,14 +86,6 @@ class UserModelTestCase(TestCase):
         self.assertTrue(match.user2_accepted == None)
         self.assertTrue(self.u1.is_matched_with(self.u2))
 
-        match2 = self.u2.accepts_match(self.uid1)
-        db.session.commit()
-        self.assertEqual(len(self.u2.matches), 1)
-        self.assertEqual(self.u2.matches[0], self.u1)
-        self.assertTrue(match2.user2_accepted == True)
-        self.assertTrue(self.u2.is_matched_with(self.u1))
-
-
     def test_user_signup(self):
         """Does User.signup successfully create a new user given valid credentials?
         Does User.signup fail to create a new user if any of the validations fail?"""

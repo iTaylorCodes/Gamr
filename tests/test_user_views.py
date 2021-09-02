@@ -1,7 +1,7 @@
 from unittest import TestCase
 from flask.helpers import get_flashed_messages
 from flask import session
-from models import db, User, Favorites, Match
+from models import AcceptedMatches, db, User, Favorites, Match
 from run import app, CURR_USER_KEY
 
 class UserViewsTestCase(TestCase):
@@ -25,6 +25,9 @@ class UserViewsTestCase(TestCase):
         self.u2 = User.signup('testuser2', 'test2@test.com', 'HASHED_PASSWORD2', 'Test2firstname', 'Test2lastname', None)
         self.uid2 = 11
         self.u2.id = self.uid2
+        self.u4 = User.signup('testuser4', 'test4@test.com', 'HASHED_PASSWORD4', 'Test4firstname', 'Test4lastname', None)
+        self.uid4 = 12
+        self.u4.id = self.uid4
 
         db.session.commit()        
 
@@ -133,16 +136,6 @@ class UserViewsTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertIn('<h2 class="card-title">testuser2</h2>', str(resp.data))
 
-    def test_homepage(self):
-        """Does the homepage display?"""
-
-        with self.client as c:
-            # Check that the view displays proper HTML
-            resp = c.get('/')
-
-            self.assertEqual(resp.status_code, 200)
-            self.assertIn('<h1>Homepage. Not yet Implemented.</h1>', str(resp.data))
-
     def test_show_edit_form(self):
         """Can a non logged in user see the page? Does the view properly display the EditUserForm when user is logged in?"""
         
@@ -240,8 +233,8 @@ class UserViewsTestCase(TestCase):
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.uid2
 
-            resp = c.get("/favorites", follow_redirects=True)
-            self.assertEqual(resp.status_code, 200)
+            resp = c.get("/favorites")
+            self.assertEqual(resp.status_code, 302)
 
             # Check that a first time user can see the form
             with c.session_transaction() as sess:
@@ -266,3 +259,78 @@ class UserViewsTestCase(TestCase):
             self.assertEqual(user_favorites.role, "Healer")
             self.assertEqual(get_flashed_messages()[0], "Your favorites have been saved! Edit them at anytime from your profile.")
             self.assertEqual(resp.status_code, 302)
+    
+    def test_show_homepage(self):
+        """Does the anonymous homepage display? Does the match making homepage display for a logged in user?"""
+
+        # Setup test favorites for testuser1
+        self.f1 = Favorites(role='DPS', system='Playstation', game1='Fallout')
+        self.f1id = 2
+        self.f1.id = self.f1id
+        self.f1.user_id = 10
+
+        self.u1.favorites_id = 2
+
+        db.session.add(self.f1)
+        db.session.commit()
+        
+        with self.client as c:
+            # Check that the view displays proper HTML
+            resp = c.get('/')
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('<h4>New to Gamr?</h4>', str(resp.data))
+
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid2
+
+            # Check that the homepage displays another user's profile or redirects back if the logged in user is pulled for random user
+            resp = c.get('/', follow_redirects=False)
+
+            self.assertTrue(resp.status_code == 200 or resp.status_code == 302)
+
+    def test_match_users(self):
+        """Can a user match with another user?"""
+
+        # Setup test favorites for testuser1
+        self.f1 = Favorites(role='DPS', system='Playstation', game1='Fallout')
+        self.f1id = 2
+        self.f1.id = self.f1id
+        self.f1.user_id = 10
+
+        self.u1.favorites_id = 2
+
+        db.session.add(self.f1)
+        db.session.commit()
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid2
+            # Check if a user can accept a match with another user
+
+            resp = c.post('/10')
+
+            self.assertEqual(resp.status_code, 302)
+
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid1
+
+            # Setup test favorites for testuser4
+            self.f4 = Favorites(role='DPS', system='Playstation', game1='Fallout')
+            self.f4id = 4
+            self.f4.id = self.f4id
+            self.f4.user_id = 12
+
+            self.u4.favorites_id = 4
+
+            db.session.add(self.f4)
+            db.session.commit()
+            
+            resp = c.post('11')
+
+            accepted_match = AcceptedMatches.query.filter(AcceptedMatches.user1_id == 10, AcceptedMatches.user2_id == 11)
+            self.assertTrue(accepted_match)
+            self.assertEqual(resp.status_code, 302)
+            
+
+
