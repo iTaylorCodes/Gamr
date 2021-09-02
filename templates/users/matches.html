@@ -1,0 +1,33 @@
+{% extends 'base.html' %} {% block title %}Gamr{% endblock %} {% block content %}
+
+<div class="container">
+  <div class="row justify-content-md-center">
+    <h1 style="text-align: center">Your Matches</h1>
+    {% for user in matches %}
+    <div class="card mb-3" style="max-width: 550px">
+      <div class="row g-0">
+        <div class="col-md-6 text-center p-3">
+          <a href="/users/{{ user.id }}"><img class="img-fluid rounded-start" src="{{ user.image_url }}" alt="Profile pic for {{ user.username }}" /></a>
+        </div>
+        <div class="col-md-6">
+          <div class="card-body">
+            <a href="/users/{{ user.id }}"><h2 class="card-title">{{ user.username }}</h2></a>
+            <ul class="list-group list-group-flush">
+              {% if user.bio %}
+              <li class="list-group-item card-text"><span class="fw-bold">Bio: </span>{{ user.bio }}</li>
+              {% endif %}
+              <li class="list-group-item"><span class="fw-bold">Name: </span>{{ user.first_name }} {{ user.last_name }}</li>
+              <li class="list-group-item"><span class="fw-bold">Email: </span>{{ user.email }}</li>
+              {% if user.discord_username %}
+              <li class="list-group-item"><span class="fw-bold">Discord: </span>{{ user.discord_username }}</li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

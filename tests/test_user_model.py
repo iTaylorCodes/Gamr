@@ -59,32 +59,27 @@ class UserModelTestCase(TestCase):
 
         self.assertEqual(repr(self.u1), "<User #1: testuser1, test1@test.com>")
 
-    def test_user_is_matched_with(self):
-        """Does user.is_matched_with return True if the users are matched?
-        Does user.is_matched_with return False if the users are not matched?"""
+    def test_all_matches(self):
+        """Does user.all_matches return with a list of matches?"""
 
-        self.assertFalse(self.u1.is_matched_with(self.u2))
-        self.assertFalse(self.u2.is_matched_with(self.u1))
+        self.u1.accepts_match(self.uid2)
+        self.u2.accepts_match(self.uid1)
 
-        self.u1.matches.append(self.u2)
-        self.u2.matches.append(self.u1)
-        db.session.commit()
-        self.assertTrue(self.u1.is_matched_with(self.u2))
-        self.assertTrue(self.u2.is_matched_with(self.u1))
+        matches = self.u1.all_matches()
+
+        self.assertTrue(len(matches) == 0)
+        self.assertEqual(len(self.u1.matches), 1)
 
     def test_user_accepts_match(self):
         """Does the user.accepts_match add the other user to user.matches?
         Does the user.accepts_match set the users choice to True?"""
 
         match = self.u1.accepts_match(self.uid2)
-        db.session.add(match)
-        db.session.commit()
 
         self.assertEqual(len(self.u1.matches), 1)
         self.assertEqual(self.u1.matches[0], self.u2)
         self.assertTrue(match.user1_accepted == True)
         self.assertTrue(match.user2_accepted == None)
-        self.assertTrue(self.u1.is_matched_with(self.u2))
 
     def test_user_signup(self):
         """Does User.signup successfully create a new user given valid credentials?

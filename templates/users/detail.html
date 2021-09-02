@@ -1,38 +1,21 @@
-{% extends 'base.html' %} {% block title %}Profile - Gamr{% endblock %} {% block
-content %}
+{% extends 'base.html' %} {% block title %}Profile - Gamr{% endblock %} {% block content %}
 <div class="container">
   <div class="row justify-content-md-center">
     <div class="col-12 col-md-6 col-xl-4">
       <div class="card">
-        <img
-          class="card-img-top"
-          src="{{ user.image_url }}"
-          alt="Profile pic for {{ user.username }}"
-          id="profile-avatar"
-        />
+        <img class="card-img-top" src="{{ user.image_url }}" alt="Profile pic for {{ user.username }}" id="profile-avatar" />
         <div class="card-body">
           <h2 class="card-title">{{ user.username }}</h2>
-          <p class="user-bio card-text">
-            {% if user.bio %}{{user.bio}} {% else %} Add your bio here. {% endif
-            %}
-          </p>
+          <p class="user-bio card-text">{% if user.bio %}{{user.bio}} {% else %} Add your bio here. {% endif %}</p>
+          {% if g.user.id == user.id %}
           <h6>
             Matches
-            <a href="/users/{{ user.id }}/matches"
-              >{{ user.matches | length }}</a
-            >
+            <a href="/matches">{{ matches | length }}</a>
           </h6>
-          {% if g.user.id == user.id %}
           <div class="d-flex justify-content-around">
-            <a
-              href="/users/{{ g.user.id }}/edit"
-              class="btn btn-outline-secondary"
-              >Edit Profile</a
-            >
+            <a href="/users/{{ g.user.id }}/edit" class="btn btn-outline-secondary">Edit Profile</a>
             <form method="POST" action="/users/delete" class="form-inline">
-              <button class="btn btn-outline-danger ml-2">
-                Delete Profile
-              </button>
+              <button class="btn btn-outline-danger ml-2">Delete Profile</button>
             </form>
           </div>
           {% endif %}
@@ -43,42 +26,29 @@ content %}
       <div class="card">
         <div class="card-body">
           <h4 class="card-title text-decoration-underline">My Info</h4>
+          {% if g.user.id == user.id or g.user.id in match_ids%}
           <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <span class="fw-bold">Name: </span>
-              {{ g.user.first_name }} {{ g.user.last_name }}
+              {{ user.first_name }} {{ user.last_name }}
             </li>
-            <li class="list-group-item">
-              <span class="fw-bold">Email: </span>{{ g.user.email }}
-            </li>
-            <li class="list-group-item">
-              <span class="fw-bold">Discord: </span>{{ g.user.discord_username
-              }}
-            </li>
+            <li class="list-group-item"><span class="fw-bold">Email: </span>{{ user.email }}</li>
+            <li class="list-group-item"><span class="fw-bold">Discord: </span>{{ user.discord_username }}</li>
           </ul>
+          {% else %}
+          <p class="fw-bold" style="color: red">Match with this user to see their details.</p>
+          {% endif %}
         </div>
       </div>
       <div class="card" style="margin-top: 30px">
         <div class="card-body">
           <h4 class="card-title text-decoration-underline">My Favorites</h4>
           <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-              <span class="fw-bold">Gaming Role: </span>{{ favorites.role }}
-            </li>
-            <li class="list-group-item">
-              <span class="fw-bold">Gaming System: </span>{{ favorites.system }}
-            </li>
-            <li class="list-group-item">
-              <span class="fw-bold">Favorite Game: </span>{{ favorites.game1 }}
-            </li>
-            <li class="list-group-item">
-              <span class="fw-bold">2nd Favorite Game: </span>{{ favorites.game2
-              }}
-            </li>
-            <li class="list-group-item">
-              <span class="fw-bold">3rd Favorite Game: </span>{{ favorites.game3
-              }}
-            </li>
+            <li class="list-group-item"><span class="fw-bold">Gaming Role: </span>{{ favorites.role }}</li>
+            <li class="list-group-item"><span class="fw-bold">Gaming System: </span>{{ favorites.system }}</li>
+            <li class="list-group-item"><span class="fw-bold">Favorite Game: </span>{{ favorites.game1 }}</li>
+            <li class="list-group-item"><span class="fw-bold">2nd Favorite Game: </span>{{ favorites.game2 }}</li>
+            <li class="list-group-item"><span class="fw-bold">3rd Favorite Game: </span>{{ favorites.game3 }}</li>
           </ul>
         </div>
       </div>

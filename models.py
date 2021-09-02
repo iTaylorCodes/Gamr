@@ -1,6 +1,5 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.sql.elements import Null
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
@@ -112,12 +111,23 @@ class User(db.Model):
 
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
-    def is_matched_with(self, other_user):
-        """Is this user matched with other user?"""
+    def all_matches(self):
+        """A list of users matched with the logged in user."""
 
-        found_user_list = [user for user in self.matches if user == other_user]
+        matches_as_user1 = AcceptedMatches.query.filter(AcceptedMatches.user1_id == self.id).all()
+        matches_as_user2 = AcceptedMatches.query.filter(AcceptedMatches.user2_id == self.id).all()
 
-        return len(found_user_list) == 1
+        all_matches = []
+
+        for match in matches_as_user1:
+            user = User.query.get_or_404(match.user2_id)
+            all_matches.append(user)
+
+        for match in matches_as_user2:
+            user = User.query.get_or_404(match.user1_id)
+            all_matches.append(user)
+
+        return all_matches
 
     def accepts_match(self, other_user_id):
         """Accepts a match between 2 users and adds it to matches table."""
@@ -141,25 +151,6 @@ class User(db.Model):
         else:
             match.user2_accepted = True
             db.session.commit()
-
-        return match
-
-    def declines_match(self, other_user_id):
-        """Declines a match between 2 users and adds it to matches table."""
-
-        match = Match.query.filter(self.id == Match.user1_id and other_user_id == Match.user2_id or self.id == Match.user2_id and other_user_id == Match.user1_id).first()
-        if match == None:
-            match = Match(
-                user1_id=self.id,
-                user2_id=other_user_id,
-                user1_accepted = None,
-                user2_accepted = None
-            )
-
-        if match.user1_id == self.id:
-            match.user1_accepted = False
-        else:
-            match.user2_accepted = False
 
         return match
 

@@ -18,6 +18,8 @@ class UserViewsTestCase(TestCase):
         User.query.delete()
         Favorites.query.delete()
         Match.query.delete()
+        AcceptedMatches.query.delete()
+
 
         self.u1 = User.signup('testuser1', 'test1@test.com', 'HASHED_PASSWORD1', 'Test1firstname', 'Test1lastname', None)
         self.uid1 = 10
@@ -127,14 +129,24 @@ class UserViewsTestCase(TestCase):
         """Does the show_user_profile view display the user's profile?"""
 
         with self.client as c:
+            # Check that the page redirects if not logged in
+            resp = c.get(f'/users/{self.uid1}')
+            self.assertEqual(resp.status_code, 302)
+
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid1
             # Check that view displays proper HTML depending on the user
             resp = c.get(f'/users/{self.uid1}')
+            html = resp.get_data(as_text=True)
+
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('<h2 class="card-title">testuser1</h2>', str(resp.data))
+            self.assertIn('<h2 class="card-title">testuser1</h2>', html)
 
             resp = c.get(f'/users/{self.uid2}')
+            html = resp.get_data(as_text=True)
+
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('<h2 class="card-title">testuser2</h2>', str(resp.data))
+            self.assertIn('<h2 class="card-title">testuser2</h2>', html)
 
     def test_show_edit_form(self):
         """Can a non logged in user see the page? Does the view properly display the EditUserForm when user is logged in?"""
