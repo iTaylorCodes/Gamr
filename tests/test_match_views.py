@@ -91,4 +91,43 @@ class MatchesViewsTestCase(TestCase):
             self.assertEqual(get_flashed_messages()[1], "You don't have any matches yet, let's make some matches!")
             self.assertEqual(resp.status_code, 302)
 
-            
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid3
+            # Match testuser3 with testuser2
+            resp = c.post('/2', follow_redirects=False)
+
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid2
+            # Match testuser2 with testuser3
+            resp = c.post('/3', follow_redirects=False)
+
+            self.assertEqual(get_flashed_messages()[2], "You are a match! Visit your matches page to view your new match! 😄")
+
+    def test_delete_match(self):
+        """Does the delete_match view delete the match between 2 users?"""
+        
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid3
+            # Match testuser3 with testuser2 and testuser4
+            resp = c.post('/2', follow_redirects=False)
+            resp = c.post('/4', follow_redirects=False)
+
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid4
+            #Match testuser4 with testuser2 and testuser3
+            resp = c.post('/3', follow_redirects=False)
+            resp = c.post('/2', follow_redirects=False)
+
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.uid2
+            # Match testuser2 with testuser3 and testuser4
+            resp = c.post('/3', follow_redirects=False)
+            resp = c.post('/4', follow_redirects=False)
+
+                
+            # Check that the match no longer exists after request
+
+            resp = c.post('/matches/3/delete')
+
+            self.assertEqual(resp.status_code, 302)
