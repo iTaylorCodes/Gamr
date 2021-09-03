@@ -22,6 +22,7 @@
               <li class="list-group-item"><span class="fw-bold">Discord: </span>{{ user.discord_username }}</li>
               {% endif %}
             </ul>
+            <form action="/matches/{{ user.id }}/delete" method="POST"><button class="btn btn-sm btn-outline-danger float-end">Delete Match</button></form>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy import exc
 from forms import UserAddForm, UserLoginForm, EditUserForm, UserFavoritesForm
 from handlers import handle_game_choices, handle_signup_errors, random_user
-from models import connect_db, db, User, Favorites, AcceptedMatches
+from models import Match, connect_db, db, User, Favorites, AcceptedMatches
 
 CURR_USER_KEY = "curr_user"
 
@@ -346,3 +346,23 @@ def show_matches():
         return redirect('/')
 
     return render_template('users/matches.html', matches=all_matches)
+
+@app.route('/matches/<int:other_user_id>/delete', methods=["POST"])
+def delete_match(other_user_id):
+    """Deletes the match between two users"""
+
+    matched_user = User.query.get_or_404(other_user_id)
+
+    potential_match = Match.query.filter(g.user.id == Match.user1_id, matched_user.id == Match.user2_id).one_or_none()
+    if not potential_match:
+        potential_match = Match.query.filter(g.user.id == Match.user2_id, matched_user.id == Match.user1_id).one_or_none()
+
+    accepted_match = AcceptedMatches.query.filter(g.user.id == AcceptedMatches.user1_id, matched_user.id == AcceptedMatches.user2_id).one_or_none()
+    if not accepted_match:
+        accepted_match = AcceptedMatches.query.filter(g.user.id == AcceptedMatches.user2_id, matched_user.id == AcceptedMatches.user1_id).one_or_none()
+
+    db.session.delete(potential_match)
+    db.session.delete(accepted_match)
+    db.session.commit()
+
+    return redirect('/matches')
