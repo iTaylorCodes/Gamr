@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 from models import db, User, Favorites, Match, AcceptedMatches
-from run import app
+from app import app
 
 
 class AcceptedMatchesModelTestCase(TestCase):

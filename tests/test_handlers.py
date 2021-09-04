@@ -3,7 +3,7 @@ from unittest import TestCase
 from flask.helpers import get_flashed_messages
 from models import db, User, Favorites, Match
 from handlers import handle_signup_errors
-from run import app
+from app import app
 
 class UserViewsTestCase(TestCase):
 

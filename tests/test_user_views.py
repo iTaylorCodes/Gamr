@@ -2,7 +2,7 @@ from unittest import TestCase
 from flask.helpers import get_flashed_messages
 from flask import session
 from models import AcceptedMatches, db, User, Favorites, Match
-from run import app, CURR_USER_KEY
+from app import app, CURR_USER_KEY
 
 class UserViewsTestCase(TestCase):
     
@@ -300,6 +300,9 @@ class UserViewsTestCase(TestCase):
             resp = c.get('/', follow_redirects=False)
 
             self.assertTrue(resp.status_code == 200 or resp.status_code == 302)
+            if resp.status_code == 200:
+                html = resp.get_data(as_text=True)
+                self.assertIn('Favorite Role: </span>DPS</li>', html)
 
     def test_match_users(self):
         """Can a user match with another user?"""

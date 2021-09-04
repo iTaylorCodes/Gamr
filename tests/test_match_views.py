@@ -1,7 +1,7 @@
 from unittest import TestCase
 from flask.helpers import get_flashed_messages
 from models import AcceptedMatches, db, User, Favorites, Match
-from run import app, CURR_USER_KEY
+from app import app, CURR_USER_KEY
 
 class MatchesViewsTestCase(TestCase):
     
