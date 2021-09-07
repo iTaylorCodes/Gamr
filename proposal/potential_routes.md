@@ -1,50 +1,63 @@
-####################################
-Homepage:
+# Routes
 
-@app.route('/')
-"""
+## Homepage:
+
+`/`
+
 Shows the homepage.
 If logged in:
-Shows another users profile card with an accept or dismiss button
+Shows another user's profile card with Match Us or Skip buttons
 Else:
-Returns a 'home' template that describes Gamr with a link to signup.
-"""
+Returns a homepage template that describes Gamr with a link to signup.
 
-####################################
-Users Routes:
+---
 
-@app.route('/users/<int:user_id>')
-"""Shows user profile"""
+## Signup/Login/Logout Routes:
 
-@app.route('/users/<int:user_id>/edit', methods=["GET", "POST"])
-"""A form to edit logged in user's profile"""
+`/signup`
 
-@app.route('/users/delete', methods=["POST"])
-"""Deletes logged in users profile and redirects to /signup"""
+A form to create a new account, redirects to `/login`
 
-@app.route('/users/<int:user_id>/matches)
-"""Shows a list of matched profiles"""
+`/login`
 
-@app.route('/users/<int:user_id>/matches/<int:match_id>/delete, methods=["POST"])
-"""Deletes a match"""
+A form to login, first time users redirect to `/favorites` else redirects to `/`
 
-####################################
-Signup/Login/Logout Routes:
+`/logout`
 
-@app.route('/signup', methods=["GET", "POST"])
-"""A form to create a new account"""
+Logs out user, redirects to `/login`
 
-@app.route('/login', methods=["GET", "POST"])
-"""A form to login"""
+---
 
-@app.route('/logout')
-"""Logs out user and redirects to /login"""
+## Favorites Route:
 
-####################################
+`/favorites`
 
-<!-- If I'm able to implement a chat functionality within the application* -->
+Form to set user favorites, redirects to `/`
 
-Chat Route:
+---
 
-@app.route('/users/<int:user_id>/matches/<int:match_id>/chat)
-"""Displays a chat between matched users"""
+## Users Routes:
+
+`/users/<user_id>`
+
+Shows user profile
+
+`/users/<user_id>/edit`
+
+Form to edit logged in user's profile, redirects to `/users/<user_id>`
+
+`/users/delete`
+
+Deletes logged in users profile, redirects to `/signup`
+
+---
+
+## Match Routes:
+
+`/matches`
+
+Shows a list of the logged in users matched profiles
+
+`/matches/<other_user_id>/delete`
+
+Deletes a match between 2 users, redirects to `/matches`
