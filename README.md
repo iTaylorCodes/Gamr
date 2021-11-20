@@ -17,9 +17,9 @@ If you'd like to setup a local version of Gamr, follow these steps:
 
 ## 1. Clone the repository
 
-`$ git clone https://github.com/iTaylorCodes/Capstone-1.git`
+`$ git clone https://github.com/iTaylorCodes/Gamr.git`
 
-`$ cd capstone-1`
+`$ cd Gamr`
 
 ## 2. Install all requirements
 
