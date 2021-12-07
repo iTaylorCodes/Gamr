@@ -100,7 +100,13 @@ nav form.navbar-form {
 }
 
 .home-hero h1 {
-  margin-bottom: 13rem;
+  margin-bottom: 10rem;
+  font-size: 3rem;
+}
+
+.home-hero .container {
+  font-size: 1.2rem;
+  margin-top: 8rem;
 }
 
 .home-hero::before {
@@ -110,5 +116,11 @@ nav form.navbar-form {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0);
+}
+
+#signup-btn {
+  background-color: rgb(219, 40, 219);
+  border-color: rgb(219, 40, 219);
+  font-size: 1.1rem;
 }
