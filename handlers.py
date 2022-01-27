@@ -42,8 +42,8 @@ def handle_game_choices():
 
     games = []
 
-    for dict in resp_list:
-        games.append(dict['name'])
+    for d in resp_list:
+        games.append(d['name'])
         
     games.sort()
     
