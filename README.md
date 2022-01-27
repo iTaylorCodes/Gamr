@@ -21,33 +21,37 @@ If you'd like to setup a local version of Gamr, follow these steps:
 
 `$ cd Gamr`
 
-## 2. Install all requirements
+## 2. Activate virtual environment
 
-`$ pip install requirements.txt`
+`$ source venv/bin/activate`
 
-## 3. Create a local PostgreSQL db and setup tables
+## 3. Install all requirements
+
+`$ pip install -r requirements.txt`
+
+## 4. Create a local PostgreSQL db and setup tables
 
 `$ createdb gamr`
 
-`$ python seed.py`
+`$ python3 seed.py`
 
-## 4. Setup IGDB API
+## 5. Setup IGDB API
 
-Visit IGDB.com and signup to receive the required Client-ID and Client-Secret environment variables.
+Visit IGDB.com and signup to receive the required `Client-ID` and `Client-Secret` environment variables.
 
-## 5. Run the flask server and navigate your browser to http://localhost:5000/
+## 6. Run the flask server and navigate your browser to http://localhost:5000/
 
 `$ flask run`
 
 # API
 
-Gamr uses the IGDB API to receive a list of games that a user may select for their top 3 to add to their profiles.
+Gamr uses the IGDB API to receive a list of video games, from which a user may select their top 3 to add to their profile.
 
 # Testing
 
 To fully test the application, running
 
-`$ python -m unittest discover tests`
+`$ python3 -m unittest discover tests`
 
 will test all routes, models, and handler functions.
 
@@ -86,3 +90,4 @@ Gamr was created using:
 - Jinja
 - HTML
 - CSS
+- Bootstrap v5.1

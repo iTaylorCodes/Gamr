@@ -38,12 +38,14 @@ def handle_game_choices():
         }
     resp = requests.post('https://api.igdb.com/v4/games', headers=headers, data='fields name; where release_dates.platform = (130,48,49,6) & themes != (42); limit 500;')
 
-    resp_dict = resp.json()
+    resp_list = resp.json()
 
     games = []
 
-    for key in resp_dict:
-        games.append(key['name'])
+    for dict in resp_list:
+        games.append(dict['name'])
+        
+    games.sort()
     
     return games
 
